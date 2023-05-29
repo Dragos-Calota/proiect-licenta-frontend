@@ -1,0 +1,9 @@
+.body {
+  display: flex;
+  margin-bottom: 0.5rem;
+  background-color: #2c3e50;
+}
+
+.button {
+  margin: 0.5rem;
+}

@@ -1,0 +1,13 @@
+.body {
+  margin: 1rem;
+}
+
+.selection {
+  margin: 1rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.form {
+  margin: 1rem;
+}

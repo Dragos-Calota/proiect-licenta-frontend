@@ -1,0 +1,13 @@
+.list {
+  padding: 1rem;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.search {
+  display: flex;
+}
