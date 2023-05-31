@@ -11,3 +11,13 @@
 .form {
   margin: 1rem;
 }
+
+.eventContent {
+  display: flex;
+}
+
+.eventButtons {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}

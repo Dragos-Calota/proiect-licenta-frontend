@@ -1,12 +1,16 @@
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
+import rrulePlugin from "@fullcalendar/rrule";
 import interactionPlugin from "@fullcalendar/interaction";
 import Toolbar from "../toolbar/Toolbar";
 import styles from "./Calendar.module.css";
 import {
   Button,
   ButtonGroup,
+  Checkbox,
+  FormControlLabel,
   Grid,
+  IconButton,
   MenuItem,
   Paper,
   Select,
@@ -17,6 +21,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { Delete } from "@mui/icons-material";
 import "dayjs/locale/ro";
 
 const Calendar = () => {
@@ -34,6 +39,10 @@ const Calendar = () => {
   const [classrooms, setClassrooms] = useState([]);
   const [selectedClassroom, setSelectedClassroom] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [interval, setInterval] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [events, setEvents] = useState([]);
+  const [shownEvents, setShownEvents] = useState([]);
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -60,13 +69,37 @@ const Calendar = () => {
       setClassrooms(response.data);
     };
 
+    const fetchEvents = async () => {
+      const response = await axios.get(
+        "https://proiect-licenta-backend.onrender.com/events"
+      );
+
+      setEvents(response.data);
+
+      setShownEvents(
+        response.data.filter(
+          (element) =>
+            element.extendedProps.series === "A" &&
+            element.extendedProps.year === 1
+        )
+      );
+    };
+
     fetchSeries();
     fetchSubjects();
     fetchClassrooms();
+    fetchEvents();
   }, []);
 
   const changeYearHandler = (index) => {
     setSelectedYear(index + 1);
+    setShownEvents(
+      events.filter(
+        (element) =>
+          element.extendedProps.year === index + 1 &&
+          element.extendedProps.series === selectedSeries
+      )
+    );
     setSelectedSubject({});
     setSubjectName("");
     setSelectedType("");
@@ -75,9 +108,19 @@ const Calendar = () => {
     setStudents([]);
     setSelectedStudents("");
     setSelectedClassroom("");
+    setSelectedDate("");
+    setInterval(0);
+    setDuration(0);
   };
 
   const changeSeriesHandler = (series) => {
+    setShownEvents(
+      events.filter(
+        (element) =>
+          element.extendedProps.series === series &&
+          element.extendedProps.year === selectedYear
+      )
+    );
     setSelectedSeries(series);
     setSelectedSubject({});
     setSubjectName("");
@@ -87,6 +130,9 @@ const Calendar = () => {
     setStudents([]);
     setSelectedStudents("");
     setSelectedClassroom("");
+    setSelectedDate("");
+    setInterval(0);
+    setDuration(0);
   };
 
   const selectSubjectHandler = (e) => {
@@ -106,6 +152,7 @@ const Calendar = () => {
     setSelectedType(e.target.value);
 
     if (e.target.value === "course") {
+      setDuration(selectedSubject.courseHours);
       setTeachers(
         selectedSubject.courseTeachers
           .filter((element) => element.series === selectedSeries)
@@ -115,7 +162,7 @@ const Calendar = () => {
       setSelectedTeacher(
         selectedSubject.courseTeachers
           .filter((element) => element.series === selectedSeries)
-          .map((element) => element.teacher)
+          .map((element) => element.teacher)[0]
       );
 
       setStudents(
@@ -127,11 +174,16 @@ const Calendar = () => {
       setSelectedStudents(
         series
           .filter((element) => element.series === selectedSeries)
-          .map((element) => `Seria ${element.series}`)
+          .map((element) => `Seria ${element.series}`)[0]
       );
     }
 
     if (e.target.value !== "course") {
+      if (e.target.value === "seminar")
+        setDuration(selectedSubject.seminarHours);
+      if (e.target.value === "lab") setDuration(selectedSubject.labHours);
+      if (e.target.value === "project")
+        setDuration(selectedSubject.projectHours);
       setTeachers(
         Array.from(
           new Set([
@@ -184,17 +236,132 @@ const Calendar = () => {
     }
   };
 
-  useEffect(() => console.log(selectedSubject), [selectedSubject]);
+  const saveHandler = async (e) => {
+    let date = new Date(selectedDate);
+    const startDate = new Date(selectedDate);
+    const endDate = new Date(date.setHours(date.getHours() + duration));
+    e.preventDefault();
+    console.log({
+      year: selectedYear,
+      series: selectedSeries,
+      subject: subjectName,
+      type: selectedType,
+      teacher: selectedTeacher,
+      students: selectedStudents,
+      classroom: selectedClassroom,
+      start: startDate,
+      end: endDate,
+      interval: interval,
+    });
+
+    await axios.post("https://proiect-licenta-backend.onrender.com/events", {
+      start: startDate,
+      subject: subjectName,
+      type: selectedType,
+      teacher: selectedTeacher,
+      students: selectedStudents,
+      classroom: selectedClassroom,
+      year: selectedYear,
+      series: selectedSeries,
+      duration: duration,
+      interval: interval,
+    });
+
+    const response = await axios.get(
+      "https://proiect-licenta-backend.onrender.com/events"
+    );
+
+    setEvents(response.data);
+
+    setShownEvents(
+      response.data.filter(
+        (element) =>
+          element.extendedProps.series === selectedSeries &&
+          element.extendedProps.year === selectedYear
+      )
+    );
+
+    setSelectedSubject({});
+    setSubjectName("");
+    setSelectedType("");
+    setTeachers([]);
+    setSelectedTeacher("");
+    setStudents([]);
+    setSelectedStudents("");
+    setSelectedClassroom("");
+    setSelectedDate("");
+    setInterval(0);
+    setDuration(0);
+  };
+
+  const cancelHandler = (e) => {
+    e.preventDefault();
+    setSelectedSubject({});
+    setSubjectName("");
+    setSelectedType("");
+    setTeachers([]);
+    setSelectedTeacher("");
+    setStudents([]);
+    setSelectedStudents("");
+    setSelectedClassroom("");
+    setSelectedDate("");
+    setInterval(0);
+    setDuration(0);
+  };
+
+  const deleteHandler = async (id) => {
+    await axios.delete(
+      `https://proiect-licenta-backend.onrender.com/events/${id}`
+    );
+    setEvents(events.filter((element) => element._id !== id));
+    setShownEvents(shownEvents.filter((element) => element._id !== id));
+  };
+
+  const eventDropHandler = async (info) => {
+    await axios.patch(
+      `https://proiect-licenta-backend.onrender.com/events/${info.event._def.extendedProps._id}`,
+      {
+        start: info.event.start,
+        end: info.event.end,
+      }
+    );
+
+    const response = await axios.get(
+      "https://proiect-licenta-backend.onrender.com/events"
+    );
+
+    setEvents(response.data);
+
+    setShownEvents(
+      response.data.filter(
+        (element) =>
+          element.extendedProps.series === selectedSeries &&
+          element.extendedProps.year === selectedYear
+      )
+    );
+  };
 
   const renderEventContent = (eventInfo) => {
     return (
-      <>
-        <b>{eventInfo.timeText}</b>
-        <p>{eventInfo.event.title}</p>
-        <p>{eventInfo.event.extendedProps.studenti}</p>
-        <p>Profesor: {eventInfo.event.extendedProps.profesor}</p>
-        <p>Sala: {eventInfo.event.extendedProps.sala}</p>
-      </>
+      <div className={styles.eventContent}>
+        <div>
+          <b>{eventInfo.event.title}</b>
+          <p>{eventInfo.event.extendedProps.studenti}</p>
+          <p>{eventInfo.event.extendedProps.teacher}</p>
+          <p>Sala: {eventInfo.event.extendedProps.classroom}</p>
+          <p>{eventInfo.event.extendedProps.students}</p>
+        </div>
+        <div className={styles.eventButtons}>
+          <IconButton
+            onClick={(e) => {
+              e.preventDefault();
+              deleteHandler(eventInfo.event._def.extendedProps._id);
+            }}
+          >
+            <Delete style={{ color: "white" }} />
+          </IconButton>
+        </div>
+      </div>
     );
   };
 
@@ -236,6 +403,7 @@ const Calendar = () => {
             <Grid item xs={3}>
               <Typography>Selectați disciplina</Typography>
               <Select
+                error={subjectName === "" ? true : false}
                 fullWidth
                 value={subjectName}
                 onChange={selectSubjectHandler}
@@ -253,6 +421,7 @@ const Calendar = () => {
             <Grid item xs={3}>
               <Typography>Selectați tipul orei</Typography>
               <Select
+                error={selectedType === "" ? true : false}
                 fullWidth
                 value={selectedType}
                 onChange={selectTypeHandler}
@@ -275,6 +444,7 @@ const Calendar = () => {
             <Grid item xs={3}>
               <Typography>Selectați cadrul didactic</Typography>
               <Select
+                error={selectedTeacher === "" ? true : false}
                 fullWidth
                 value={selectedTeacher}
                 onChange={(e) => setSelectedTeacher(e.target.value)}
@@ -290,6 +460,7 @@ const Calendar = () => {
             <Grid item xs={3}>
               <Typography>Selectați studenții</Typography>
               <Select
+                error={selectedStudents === "" ? true : false}
                 fullWidth
                 value={selectedStudents}
                 onChange={(e) => setSelectedStudents(e.target.value)}
@@ -305,6 +476,7 @@ const Calendar = () => {
             <Grid item xs={3}>
               <Typography>Selectați sala</Typography>
               <Select
+                error={selectedClassroom === "" ? true : false}
                 fullWidth
                 value={selectedClassroom}
                 onChange={(e) => setSelectedClassroom(e.target.value)}
@@ -320,16 +492,70 @@ const Calendar = () => {
             <Grid item xs={3}>
               <Typography>Selectați data și ora de început</Typography>
               <LocalizationProvider
-                fullWidth
                 dateAdapter={AdapterDayjs}
                 adapterLocale="ro"
               >
                 <DateTimePicker
                   value={selectedDate}
-                  onChange={(value) => setSelectedDate(value)}
+                  onChange={(value) =>
+                    value === null
+                      ? setSelectedDate("")
+                      : setSelectedDate(value)
+                  }
                   ampm={false}
                 />
               </LocalizationProvider>
+            </Grid>
+
+            <Grid item xs={3}>
+              <Typography>Repetare</Typography>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={interval === 1 ? true : false}
+                    onChange={(e) =>
+                      e.target.checked ? setInterval(1) : setInterval(0)
+                    }
+                  />
+                }
+                label="Săptămânal"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={interval === 2 ? true : false}
+                    onChange={(e) =>
+                      e.target.checked ? setInterval(2) : setInterval(0)
+                    }
+                  />
+                }
+                label="La două săptămâni"
+              />
+            </Grid>
+
+            <Grid item xs={3}>
+              <Grid container spacing={2} textAlign="center">
+                <Grid item xs={12} />
+                <Grid item xs={6}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={saveHandler}
+                  >
+                    Salvați
+                  </Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={cancelHandler}
+                  >
+                    Anulați
+                  </Button>
+                </Grid>
+                <Grid item xs={12} />
+              </Grid>
             </Grid>
           </Grid>
         </Paper>
@@ -337,21 +563,20 @@ const Calendar = () => {
 
       <div className={styles.body}>
         <FullCalendar
+          plugins={[timeGridPlugin, interactionPlugin, rrulePlugin]}
           locale="ro"
           firstDay={1}
           eventContent={renderEventContent}
-          events={[]}
-          plugins={[timeGridPlugin, interactionPlugin]}
+          events={shownEvents}
           initialView="timeGridWeek"
           allDaySlot={false}
           slotMinTime="08:00:00"
           slotMaxTime="21:00:00"
           slotDuration="01:00:00"
           expandRows={true}
-          selectable
           editable
           eventDurationEditable={false}
-          select={(info) => console.log(info)}
+          eventDrop={eventDropHandler}
         />
       </div>
     </>
