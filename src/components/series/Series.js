@@ -28,9 +28,7 @@ const Series = ({ setEditingSeriesId }) => {
 
   useEffect(() => {
     const fetchSeries = async () => {
-      const response = await axios.get(
-        "https://proiect-licenta-backend.onrender.com/series"
-      );
+      const response = await axios.get("http://localhost:3001/series");
 
       setSeries([...response.data]);
     };
@@ -48,7 +46,7 @@ const Series = ({ setEditingSeriesId }) => {
 
   const deleteOptionHandler = async (seriesId) => {
     const response = await axios.delete(
-      `https://proiect-licenta-backend.onrender.com/series/${seriesId}`
+      `http://localhost:3001/series/${seriesId}`
     );
 
     console.log(response.data);

@@ -28,9 +28,7 @@ const Subjects = ({ setEditingSubjectId }) => {
 
   useEffect(() => {
     const fetchSubjects = async () => {
-      const response = await axios.get(
-        "https://proiect-licenta-backend.onrender.com/subjects"
-      );
+      const response = await axios.get("http://localhost:3001/subjects");
       setSubjects(response.data);
     };
 
@@ -47,7 +45,7 @@ const Subjects = ({ setEditingSubjectId }) => {
 
   const deleteOptionHandler = async (subjectId) => {
     const response = await axios.delete(
-      `https://proiect-licenta-backend.onrender.com/subjects/${subjectId}`
+      `http://localhost:3001/subjects/${subjectId}`
     );
     console.log(response.data);
 

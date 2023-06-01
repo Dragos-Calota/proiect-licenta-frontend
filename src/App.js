@@ -9,6 +9,7 @@ import { useState } from "react";
 import Classrooms from "./components/classrooms/Classrooms";
 import ClassroomsForm from "./components/classrooms/ClassroomsForm";
 import SeriesForm from "./components/series/SeriesForm";
+import Holidays from "./components/holidays/Holidays";
 
 const App = () => {
   const [editingTeacherId, setEditingTeacherId] = useState(null);
@@ -19,6 +20,7 @@ const App = () => {
   return (
     <Routes>
       <Route path="/" element={<Calendar />} />
+
       <Route path="/teachers">
         <Route
           path=""
@@ -34,6 +36,7 @@ const App = () => {
           }
         />
       </Route>
+
       <Route path="/subjects">
         <Route
           path=""
@@ -49,6 +52,7 @@ const App = () => {
           }
         />
       </Route>
+
       <Route path="/series">
         <Route
           path=""
@@ -64,6 +68,7 @@ const App = () => {
           }
         />
       </Route>
+
       <Route path="/classrooms">
         <Route
           path=""
@@ -79,6 +84,8 @@ const App = () => {
           }
         />
       </Route>
+
+      <Route path="/holidays" element={<Holidays />} />
     </Routes>
   );
 };

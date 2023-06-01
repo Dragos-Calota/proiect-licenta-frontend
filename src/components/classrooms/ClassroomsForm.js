@@ -3,6 +3,7 @@ import styles from "./ClassroomsForm.module.css";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import "dayjs/locale/ro";
 
 const ClassroomsForm = ({ editingClassroomId, setEditingClassroomId }) => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const ClassroomsForm = ({ editingClassroomId, setEditingClassroomId }) => {
     if (editingClassroomId !== null) {
       const fetchClassroom = async () => {
         const response = await axios.get(
-          `https://proiect-licenta-backend.onrender.com/classrooms/${editingClassroomId}`
+          `http://localhost:3001/classrooms/${editingClassroomId}`
         );
 
         setRoom(response.data.room);
@@ -33,14 +34,11 @@ const ClassroomsForm = ({ editingClassroomId, setEditingClassroomId }) => {
     let response = null;
 
     if (editingClassroomId === null) {
-      response = await axios.post(
-        "https://proiect-licenta-backend.onrender.com/classrooms",
-        {
-          room: room,
-          building: building,
-          floor: floor,
-        }
-      );
+      response = await axios.post("http://localhost:3001/classrooms", {
+        room: room,
+        building: building,
+        floor: floor,
+      });
 
       if (response.data.message) {
         setError(true);
@@ -54,7 +52,7 @@ const ClassroomsForm = ({ editingClassroomId, setEditingClassroomId }) => {
 
     if (editingClassroomId !== null) {
       response = await axios.patch(
-        `https://proiect-licenta-backend.onrender.com/classrooms/${editingClassroomId}`,
+        `http://localhost:3001/classrooms/${editingClassroomId}`,
         {
           room: room,
           building: building,

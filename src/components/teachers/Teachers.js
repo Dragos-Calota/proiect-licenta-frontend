@@ -28,9 +28,7 @@ const Teachers = ({ setEditingTeacherId }) => {
 
   useEffect(() => {
     const fetchTeachers = async () => {
-      const response = await axios.get(
-        "https://proiect-licenta-backend.onrender.com/teachers"
-      );
+      const response = await axios.get("http://localhost:3001/teachers");
       setTeachers([...response.data]);
     };
 
@@ -47,7 +45,7 @@ const Teachers = ({ setEditingTeacherId }) => {
 
   const deleteOptionHandler = async (teacherId) => {
     const response = await axios.delete(
-      `https://proiect-licenta-backend.onrender.com/teachers/${teacherId}`
+      `http://localhost:3001/teachers/${teacherId}`
     );
     console.log(response.data);
 

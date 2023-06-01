@@ -22,7 +22,6 @@ import axios from "axios";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Delete } from "@mui/icons-material";
-import "dayjs/locale/ro";
 
 const Calendar = () => {
   const [series, setSeries] = useState([]);
@@ -43,36 +42,29 @@ const Calendar = () => {
   const [duration, setDuration] = useState(0);
   const [events, setEvents] = useState([]);
   const [shownEvents, setShownEvents] = useState([]);
+  const [holidays, setHolidays] = useState([]);
 
   useEffect(() => {
     const fetchSeries = async () => {
-      const response = await axios.get(
-        "https://proiect-licenta-backend.onrender.com/series"
-      );
+      const response = await axios.get("http://localhost:3001/series");
 
       setSeries(response.data);
     };
 
     const fetchSubjects = async () => {
-      const response = await axios.get(
-        "https://proiect-licenta-backend.onrender.com/subjects"
-      );
+      const response = await axios.get("http://localhost:3001/subjects");
 
       setSubjects(response.data);
     };
 
     const fetchClassrooms = async () => {
-      const response = await axios.get(
-        "https://proiect-licenta-backend.onrender.com/classrooms"
-      );
+      const response = await axios.get("http://localhost:3001/classrooms");
 
       setClassrooms(response.data);
     };
 
     const fetchEvents = async () => {
-      const response = await axios.get(
-        "https://proiect-licenta-backend.onrender.com/events"
-      );
+      const response = await axios.get("http://localhost:3001/events");
 
       setEvents(response.data);
 
@@ -85,10 +77,17 @@ const Calendar = () => {
       );
     };
 
+    const fetchHolidays = async () => {
+      const response = await axios.get("http://localhost:3001/holidays");
+
+      setHolidays(response.data);
+    };
+
     fetchSeries();
     fetchSubjects();
     fetchClassrooms();
     fetchEvents();
+    fetchHolidays();
   }, []);
 
   const changeYearHandler = (index) => {
@@ -96,8 +95,8 @@ const Calendar = () => {
     setShownEvents(
       events.filter(
         (element) =>
-          element.extendedProps.year === index + 1 &&
-          element.extendedProps.series === selectedSeries
+          element.extendedProps.series === selectedSeries &&
+          element.extendedProps.year === index + 1
       )
     );
     setSelectedSubject({});
@@ -114,6 +113,7 @@ const Calendar = () => {
   };
 
   const changeSeriesHandler = (series) => {
+    setSelectedSeries(series);
     setShownEvents(
       events.filter(
         (element) =>
@@ -121,7 +121,6 @@ const Calendar = () => {
           element.extendedProps.year === selectedYear
       )
     );
-    setSelectedSeries(series);
     setSelectedSubject({});
     setSubjectName("");
     setSelectedType("");
@@ -254,7 +253,7 @@ const Calendar = () => {
       interval: interval,
     });
 
-    await axios.post("https://proiect-licenta-backend.onrender.com/events", {
+    await axios.post("http://localhost:3001/events", {
       start: startDate,
       subject: subjectName,
       type: selectedType,
@@ -267,9 +266,7 @@ const Calendar = () => {
       interval: interval,
     });
 
-    const response = await axios.get(
-      "https://proiect-licenta-backend.onrender.com/events"
-    );
+    const response = await axios.get("http://localhost:3001/events");
 
     setEvents(response.data);
 
@@ -310,25 +307,21 @@ const Calendar = () => {
   };
 
   const deleteHandler = async (id) => {
-    await axios.delete(
-      `https://proiect-licenta-backend.onrender.com/events/${id}`
-    );
+    await axios.delete(`http://localhost:3001/events/${id}`);
     setEvents(events.filter((element) => element._id !== id));
     setShownEvents(shownEvents.filter((element) => element._id !== id));
   };
 
   const eventDropHandler = async (info) => {
     await axios.patch(
-      `https://proiect-licenta-backend.onrender.com/events/${info.event._def.extendedProps._id}`,
+      `http://localhost:3001/events/${info.event._def.extendedProps._id}`,
       {
         start: info.event.start,
         end: info.event.end,
       }
     );
 
-    const response = await axios.get(
-      "https://proiect-licenta-backend.onrender.com/events"
-    );
+    const response = await axios.get("http://localhost:3001/events");
 
     setEvents(response.data);
 
@@ -342,6 +335,7 @@ const Calendar = () => {
   };
 
   const renderEventContent = (eventInfo) => {
+    if (eventInfo.event.display === "background") return <></>;
     return (
       <div className={styles.eventContent}>
         <div>
@@ -350,6 +344,7 @@ const Calendar = () => {
           <p>{eventInfo.event.extendedProps.teacher}</p>
           <p>Sala: {eventInfo.event.extendedProps.classroom}</p>
           <p>{eventInfo.event.extendedProps.students}</p>
+          <p>{eventInfo.display}</p>
         </div>
         <div className={styles.eventButtons}>
           <IconButton
@@ -567,7 +562,7 @@ const Calendar = () => {
           locale="ro"
           firstDay={1}
           eventContent={renderEventContent}
-          events={shownEvents}
+          events={[...holidays, ...shownEvents]}
           initialView="timeGridWeek"
           allDaySlot={false}
           slotMinTime="08:00:00"

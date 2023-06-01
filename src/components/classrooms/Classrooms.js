@@ -28,9 +28,7 @@ const Classrooms = ({ setEditingClassroomId }) => {
 
   useEffect(() => {
     const fetchClassrooms = async () => {
-      const response = await axios.get(
-        "https://proiect-licenta-backend.onrender.com/classrooms"
-      );
+      const response = await axios.get("http://localhost:3001/classrooms");
       setClassrooms([...response.data]);
     };
 
@@ -47,7 +45,7 @@ const Classrooms = ({ setEditingClassroomId }) => {
 
   const deleteOptionHandler = async (classroomId) => {
     const response = await axios.delete(
-      `https://proiect-licenta-backend.onrender.com/classrooms/${classroomId}`
+      `http://localhost:3001/classrooms/${classroomId}`
     );
 
     console.log(response.data);

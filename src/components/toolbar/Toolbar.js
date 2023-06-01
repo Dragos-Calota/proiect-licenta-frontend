@@ -6,6 +6,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import styles from "./Toolbar.module.css";
 import { useNavigate } from "react-router-dom";
+import { EventBusy } from "@mui/icons-material";
 
 const Toolbar = () => {
   const navigate = useNavigate();
@@ -78,6 +79,20 @@ const Toolbar = () => {
           }}
         >
           Săli de curs
+        </Button>
+      </div>
+
+      <div className={styles.button}>
+        <Button
+          variant="contained"
+          startIcon={<EventBusy />}
+          style={{ backgroundColor: "deeppink" }}
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/holidays");
+          }}
+        >
+          Vacanțe
         </Button>
       </div>
     </div>

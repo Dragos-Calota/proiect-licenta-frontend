@@ -24,7 +24,7 @@ const TeachersForm = ({ editingTeacherId, setEditingTeacherId }) => {
     if (editingTeacherId !== null) {
       const fetchTeacher = async () => {
         const response = await axios.get(
-          `https://proiect-licenta-backend.onrender.com/teachers/${editingTeacherId}`
+          `http://localhost:3001/teachers/${editingTeacherId}`
         );
 
         setFullName(response.data.name);
@@ -39,14 +39,11 @@ const TeachersForm = ({ editingTeacherId, setEditingTeacherId }) => {
   const saveHandler = async () => {
     let response = null;
     if (editingTeacherId === null) {
-      response = await axios.post(
-        "https://proiect-licenta-backend.onrender.com/teachers",
-        {
-          name: fullName,
-          title: title,
-          email: email,
-        }
-      );
+      response = await axios.post("http://localhost:3001/teachers", {
+        name: fullName,
+        title: title,
+        email: email,
+      });
 
       if (response.data.message) {
         setError(true);
@@ -60,7 +57,7 @@ const TeachersForm = ({ editingTeacherId, setEditingTeacherId }) => {
 
     if (editingTeacherId !== null) {
       response = await axios.patch(
-        `https://proiect-licenta-backend.onrender.com/teachers/${editingTeacherId}`,
+        `http://localhost:3001/teachers/${editingTeacherId}`,
         {
           name: fullName,
           title: title,
