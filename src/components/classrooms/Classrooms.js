@@ -44,11 +44,9 @@ const Classrooms = ({ setEditingClassroomId }) => {
   }, [classrooms]);
 
   const deleteOptionHandler = async (classroomId) => {
-    const response = await axios.delete(
-      `http://localhost:3001/classrooms/${classroomId}`
-    );
+    await axios.delete(`http://localhost:3001/classrooms/${classroomId}`);
 
-    console.log(response.data);
+    await axios.delete(`http://localhost:3001/events/classroom/${classroomId}`);
 
     setClassrooms(
       classrooms.filter((classroom) => classroom._id !== classroomId)

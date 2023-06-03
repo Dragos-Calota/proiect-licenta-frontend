@@ -116,62 +116,136 @@ const Subjects = ({ setEditingSubjectId }) => {
                         <TableCell align="left">{subject.year}</TableCell>
                         <TableCell align="left">{subject.semester}</TableCell>
                         <TableCell align="left">
-                          <Typography variant="inherit">{`Curs: ${
-                            subject.courseHours < 1
-                              ? "-"
-                              : subject.courseHours + " ore"
-                          }`}</Typography>
-                          <Typography variant="inherit">
-                            {`Seminar: ${
-                              subject.seminarHours < 1
-                                ? "-"
-                                : subject.seminarHours + " ore"
-                            }`}
-                          </Typography>
-                          <Typography variant="inherit">
-                            {`Laborator: ${
-                              subject.labHours < 1
-                                ? "-"
-                                : subject.labHours + " ore"
-                            }`}
-                          </Typography>
-                          <Typography variant="inherit">
-                            {`Proiect: ${
-                              subject.projectHours < 1
-                                ? "-"
-                                : subject.projectHours + " ore"
-                            }`}
-                          </Typography>
+                          <TableContainer component={Paper}>
+                            <Table>
+                              <TableBody>
+                                <TableRow>
+                                  <TableCell>
+                                    <Typography variant="inherit">{`Curs: ${
+                                      subject.courseHours < 1
+                                        ? "-"
+                                        : subject.courseHours + " ore"
+                                    }`}</Typography>
+                                  </TableCell>
+                                </TableRow>
+
+                                <TableRow>
+                                  <TableCell>
+                                    <Typography variant="inherit">
+                                      {`Seminar: ${
+                                        subject.seminarHours < 1
+                                          ? "-"
+                                          : subject.seminarHours + " ore"
+                                      }`}
+                                    </Typography>
+                                  </TableCell>
+                                </TableRow>
+
+                                <TableRow>
+                                  <TableCell>
+                                    <Typography variant="inherit">
+                                      {`Laborator: ${
+                                        subject.labHours < 1
+                                          ? "-"
+                                          : subject.labHours + " ore"
+                                      }`}
+                                    </Typography>
+                                  </TableCell>
+                                </TableRow>
+
+                                <TableRow>
+                                  <TableCell>
+                                    <Typography variant="inherit">
+                                      {`Proiect: ${
+                                        subject.projectHours < 1
+                                          ? "-"
+                                          : subject.projectHours + " ore"
+                                      }`}
+                                    </Typography>
+                                  </TableCell>
+                                </TableRow>
+                              </TableBody>
+                            </Table>
+                          </TableContainer>
                         </TableCell>
                         <TableCell align="left">
-                          {subject.courseTeachers.map((teacher) => (
-                            <Typography variant="inherit" key={teacher.series}>
-                              {`- Seria ${teacher.series}: ${
-                                teacher.teacher === null ? "-" : teacher.teacher
-                              }`}
-                            </Typography>
-                          ))}
+                          <TableContainer component={Paper}>
+                            <Table>
+                              <TableBody>
+                                {subject.courseHours > 0 &&
+                                  subject.courseTeachers.map((teacher) => (
+                                    <TableRow key={teacher.series}>
+                                      <TableCell>
+                                        <Typography variant="inherit">
+                                          {`Seria ${teacher.series}: ${
+                                            teacher.teacher === null
+                                              ? "-"
+                                              : teacher.teacher.name
+                                          }`}
+                                        </Typography>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                              </TableBody>
+                            </Table>
+                          </TableContainer>
                         </TableCell>
                         <TableCell align="left">
-                          {subject.seminarTeachers.map((teacher, index) => (
-                            <Typography variant="inherit" key={index}>
-                              {teacher}
-                            </Typography>
-                          ))}
+                          <TableContainer component={Paper}>
+                            <Table>
+                              <TableBody>
+                                {subject.seminarTeachers.map(
+                                  (teacher, index) => (
+                                    <TableRow key={index}>
+                                      <TableCell>
+                                        <Typography variant="inherit">
+                                          {`${teacher.title} ${teacher.name}`}
+                                        </Typography>
+                                      </TableCell>
+                                    </TableRow>
+                                  )
+                                )}
+                              </TableBody>
+                            </Table>
+                          </TableContainer>
                         </TableCell>
+
                         <TableCell align="left">
-                          {subject.labTeachers.map((teacher, index) => (
-                            <Typography variant="inherit" key={index}>
-                              {teacher}
-                            </Typography>
-                          ))}
+                          <TableContainer component={Paper}>
+                            <Table>
+                              <TableBody>
+                                {subject.labTeachers.map((teacher, index) => (
+                                  <TableRow key={index}>
+                                    <TableCell>
+                                      <Typography variant="inherit">
+                                        {`${teacher.title} ${teacher.name}`}
+                                      </Typography>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </TableContainer>
                         </TableCell>
+
                         <TableCell align="left">
-                          {subject.projectTeachers.map((teacher, index) => (
-                            <Typography variant="inherit" key={index}>
-                              {teacher}
-                            </Typography>
-                          ))}
+                          <TableContainer component={Paper}>
+                            <Table>
+                              <TableBody>
+                                {subject.projectTeachers.map(
+                                  (teacher, index) => (
+                                    <TableRow key={index}>
+                                      <TableCell>
+                                        <Typography variant="inherit">
+                                          {`${teacher.title} ${teacher.name}`}
+                                        </Typography>
+                                      </TableCell>
+                                    </TableRow>
+                                  )
+                                )}
+                              </TableBody>
+                            </Table>
+                          </TableContainer>
                         </TableCell>
 
                         <TableCell align="right">

@@ -90,7 +90,7 @@ const Series = ({ setEditingSeriesId }) => {
                 <TableRow>
                   <TableCell>Seria</TableCell>
                   <TableCell>Anul 1</TableCell>
-                  <TableCell>Anul 3</TableCell>
+                  <TableCell>Anul 2</TableCell>
                   <TableCell>Anul 3</TableCell>
                   <TableCell>Anul 4</TableCell>
                   <TableCell></TableCell>

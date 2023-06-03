@@ -51,6 +51,14 @@ const ClassroomsForm = ({ editingClassroomId, setEditingClassroomId }) => {
     }
 
     if (editingClassroomId !== null) {
+      await axios.patch(
+        `http://localhost:3001/events/classroom/${editingClassroomId}`,
+        {
+          room: room,
+          building: building,
+          floor: floor,
+        }
+      );
       response = await axios.patch(
         `http://localhost:3001/classrooms/${editingClassroomId}`,
         {

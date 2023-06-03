@@ -1,12 +1,7 @@
 import {
   Autocomplete,
   Button,
-  Checkbox,
   Grid,
-  ListItemText,
-  MenuItem,
-  OutlinedInput,
-  Select,
   TextField,
   Typography,
 } from "@mui/material";
@@ -39,11 +34,7 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
     const fetchTeachers = async () => {
       const response = await axios.get("http://localhost:3001/teachers");
 
-      setTeachers(
-        response.data.map((teacher) => {
-          return `${teacher.title} ${teacher.name}`;
-        })
-      );
+      setTeachers(response.data);
     };
 
     const fetchSeries = async () => {
@@ -151,28 +142,40 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
     }
   };
 
-  const changeSeminarTeachers = (e) => {
-    const {
-      target: { value },
-    } = e;
-
-    setSeminarTeachers(typeof value === "string" ? value.split(",") : value);
+  const selectSeminarTeachersHandler = (event, value) => {
+    setSeminarTeachers(
+      value.map((element) =>
+        teachers.find(
+          (teacher) =>
+            teacher.name ===
+            element.split(" ").slice(1, element.split(" ").length).join(" ")
+        )
+      )
+    );
   };
 
-  const changeLabTeachers = (e) => {
-    const {
-      target: { value },
-    } = e;
-
-    setLabTeachers(typeof value === "string" ? value.split(",") : value);
+  const selectLabTeachersHandler = (event, value) => {
+    setLabTeachers(
+      value.map((element) =>
+        teachers.find(
+          (teacher) =>
+            teacher.name ===
+            element.split(" ").slice(1, element.split(" ").length).join(" ")
+        )
+      )
+    );
   };
 
-  const changeProjectTeachers = (e) => {
-    const {
-      target: { value },
-    } = e;
-
-    setProjectTeachers(typeof value === "string" ? value.split(",") : value);
+  const selectProjectTeachersHandler = (event, value) => {
+    setProjectTeachers(
+      value.map((element) =>
+        teachers.find(
+          (teacher) =>
+            teacher.name ===
+            element.split(" ").slice(1, element.split(" ").length).join(" ")
+        )
+      )
+    );
   };
 
   return (
@@ -199,6 +202,7 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
         </Grid>
 
         <Grid item xs={0} md={2}></Grid>
+
         <Grid item xs={12} md={4}>
           <Typography>An predare</Typography>
           <TextField
@@ -209,6 +213,7 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
             onChange={(e) => setYear(e.target.value)}
           />
         </Grid>
+
         <Grid item xs={12} md={4}>
           <Typography>Semestru predare</Typography>
           <TextField
@@ -219,6 +224,7 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
             onChange={(e) => setSemester(e.target.value)}
           />
         </Grid>
+
         <Grid item xs={0} md={2}></Grid>
 
         <Grid item xs={12} md={3}>
@@ -303,16 +309,37 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
                 </Grid>
                 <Grid item xs={10}>
                   <Autocomplete
+                    value={
+                      courseTeachers[index].teacher === null
+                        ? null
+                        : `${courseTeachers[index].teacher.title} ${courseTeachers[index].teacher.name}`
+                    }
                     disabled={+courseHours < 1 ? true : false}
-                    options={teachers}
+                    options={teachers.map(
+                      (element) => `${element.title} ${element.name}`
+                    )}
                     fullWidth
-                    value={courseTeachers[index].teacher}
                     onChange={(event, value) => {
                       setCourseTeachers((prev) => {
                         const newTeachers = [...prev];
+                        if (value === null) {
+                          newTeachers[index] = {
+                            series: element,
+                            teacher: value,
+                          };
+
+                          return newTeachers;
+                        }
                         newTeachers[index] = {
                           series: element,
-                          teacher: value,
+                          teacher: teachers.find(
+                            (element) =>
+                              element.name ===
+                              value
+                                .split(" ")
+                                .slice(1, value.split(" ").length)
+                                .join(" ")
+                          ),
                         };
 
                         return newTeachers;
@@ -337,26 +364,28 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
               <Typography>Responsabli seminar</Typography>
             </Grid>
             <Grid item xs={8}>
-              <Select
-                error={
-                  +seminarHours >= 1 && seminarTeachers.length === 0
-                    ? true
-                    : false
-                }
-                disabled={+seminarHours < 1 ? true : false}
+              <Autocomplete
                 multiple
-                value={seminarTeachers}
-                onChange={changeSeminarTeachers}
-                input={<OutlinedInput fullWidth />}
-                renderValue={(selected) => selected.join(", ")}
-              >
-                {teachers.map((teacher) => (
-                  <MenuItem key={teacher} value={teacher}>
-                    <Checkbox checked={seminarTeachers.indexOf(teacher) > -1} />
-                    <ListItemText primary={teacher} />
-                  </MenuItem>
-                ))}
-              </Select>
+                value={seminarTeachers.map(
+                  (element) => `${element.title} ${element.name}`
+                )}
+                options={teachers.map(
+                  (element) => `${element.title} ${element.name}`
+                )}
+                onChange={selectSeminarTeachersHandler}
+                disabled={seminarHours < 1 ? true : false}
+                filterSelectedOptions={true}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={
+                      +seminarHours >= 1 && seminarTeachers.length === 0
+                        ? true
+                        : false
+                    }
+                  />
+                )}
+              />
             </Grid>
           </Grid>
         </Grid>
@@ -367,24 +396,26 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
               <Typography>Responsabli laborator</Typography>
             </Grid>
             <Grid item xs={8}>
-              <Select
-                error={
-                  +labHours >= 1 && labTeachers.length === 0 ? true : false
-                }
-                disabled={+labHours < 1 ? true : false}
+              <Autocomplete
+                value={labTeachers.map(
+                  (element) => `${element.title} ${element.name}`
+                )}
                 multiple
-                value={labTeachers}
-                onChange={changeLabTeachers}
-                input={<OutlinedInput fullWidth />}
-                renderValue={(selected) => selected.join(", ")}
-              >
-                {teachers.map((teacher) => (
-                  <MenuItem key={teacher} value={teacher}>
-                    <Checkbox checked={labTeachers.indexOf(teacher) > -1} />
-                    <ListItemText primary={teacher} />
-                  </MenuItem>
-                ))}
-              </Select>
+                options={teachers.map(
+                  (element) => `${element.title} ${element.name}`
+                )}
+                onChange={selectLabTeachersHandler}
+                disabled={labHours < 1 ? true : false}
+                filterSelectedOptions={true}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={
+                      +labHours >= 1 && labTeachers.length === 0 ? true : false
+                    }
+                  />
+                )}
+              />
             </Grid>
           </Grid>
         </Grid>
@@ -395,26 +426,28 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
               <Typography>Responsabli proiect</Typography>
             </Grid>
             <Grid item xs={8}>
-              <Select
-                error={
-                  +projectHours >= 1 && projectTeachers.length === 0
-                    ? true
-                    : false
-                }
-                disabled={+projectHours < 1 ? true : false}
+              <Autocomplete
+                value={projectTeachers.map(
+                  (element) => `${element.title} ${element.name}`
+                )}
                 multiple
-                value={projectTeachers}
-                onChange={changeProjectTeachers}
-                input={<OutlinedInput fullWidth />}
-                renderValue={(selected) => selected.join(", ")}
-              >
-                {teachers.map((teacher) => (
-                  <MenuItem key={teacher} value={teacher}>
-                    <Checkbox checked={projectTeachers.indexOf(teacher) > -1} />
-                    <ListItemText primary={teacher} />
-                  </MenuItem>
-                ))}
-              </Select>
+                options={teachers.map(
+                  (element) => `${element.title} ${element.name}`
+                )}
+                onChange={selectProjectTeachersHandler}
+                disabled={projectHours < 1 ? true : false}
+                filterSelectedOptions={true}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={
+                      +projectHours >= 1 && projectTeachers.length === 0
+                        ? true
+                        : false
+                    }
+                  />
+                )}
+              />
             </Grid>
           </Grid>
         </Grid>

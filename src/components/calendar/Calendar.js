@@ -5,6 +5,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import Toolbar from "../toolbar/Toolbar";
 import styles from "./Calendar.module.css";
 import {
+  Autocomplete,
   Button,
   ButtonGroup,
   Checkbox,
@@ -14,6 +15,7 @@ import {
   MenuItem,
   Paper,
   Select,
+  TextField,
   Typography,
 } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
@@ -26,29 +28,31 @@ import { Delete } from "@mui/icons-material";
 const Calendar = () => {
   const [series, setSeries] = useState([]);
   const [selectedYear, setSelectedYear] = useState(1);
-  const [selectedSeries, setSelectedSeries] = useState("A");
+  const [selectedSeries, setSelectedSeries] = useState({});
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
-  const [subjectName, setSubjectName] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [teachers, setTeachers] = useState([]);
-  const [selectedTeacher, setSelectedTeacher] = useState("");
+  const [selectedTeacher, setSelectedTeacher] = useState({});
   const [students, setStudents] = useState([]);
   const [selectedStudents, setSelectedStudents] = useState("");
   const [classrooms, setClassrooms] = useState([]);
-  const [selectedClassroom, setSelectedClassroom] = useState("");
+  const [selectedClassroom, setSelectedClassroom] = useState({});
   const [selectedDate, setSelectedDate] = useState("");
   const [interval, setInterval] = useState(0);
   const [duration, setDuration] = useState(0);
   const [events, setEvents] = useState([]);
   const [shownEvents, setShownEvents] = useState([]);
   const [holidays, setHolidays] = useState([]);
+  const [oldStart, setOldStart] = useState(null);
+  const [initialStart, setInitialStart] = useState(null);
 
   useEffect(() => {
     const fetchSeries = async () => {
       const response = await axios.get("http://localhost:3001/series");
 
       setSeries(response.data);
+      setSelectedSeries(response.data[0]);
     };
 
     const fetchSubjects = async () => {
@@ -71,7 +75,7 @@ const Calendar = () => {
       setShownEvents(
         response.data.filter(
           (element) =>
-            element.extendedProps.series === "A" &&
+            element.extendedProps.series.series === "A" &&
             element.extendedProps.year === 1
         )
       );
@@ -95,18 +99,17 @@ const Calendar = () => {
     setShownEvents(
       events.filter(
         (element) =>
-          element.extendedProps.series === selectedSeries &&
+          element.extendedProps.series.series === selectedSeries.series &&
           element.extendedProps.year === index + 1
       )
     );
     setSelectedSubject({});
-    setSubjectName("");
     setSelectedType("");
     setTeachers([]);
-    setSelectedTeacher("");
+    setSelectedTeacher({});
     setStudents([]);
     setSelectedStudents("");
-    setSelectedClassroom("");
+    setSelectedClassroom({});
     setSelectedDate("");
     setInterval(0);
     setDuration(0);
@@ -117,35 +120,58 @@ const Calendar = () => {
     setShownEvents(
       events.filter(
         (element) =>
-          element.extendedProps.series === series &&
+          element.extendedProps.series.series === series.series &&
           element.extendedProps.year === selectedYear
       )
     );
     setSelectedSubject({});
-    setSubjectName("");
+
     setSelectedType("");
     setTeachers([]);
-    setSelectedTeacher("");
+    setSelectedTeacher({});
     setStudents([]);
     setSelectedStudents("");
-    setSelectedClassroom("");
+    setSelectedClassroom({});
     setSelectedDate("");
     setInterval(0);
     setDuration(0);
   };
 
-  const selectSubjectHandler = (e) => {
-    setSubjectName(e.target.value);
-    setSelectedSubject(
-      subjects.filter((subject) => {
-        return subject.name === e.target.value;
-      })[0]
+  const selectSubjectHandler = (event, value) => {
+    if (value === null) {
+      setSelectedSubject({});
+
+      setSelectedType("");
+      setTeachers([]);
+      setSelectedTeacher({});
+      setStudents([]);
+      setSelectedStudents("");
+      setSelectedClassroom({});
+      setSelectedDate("");
+      setInterval(0);
+      setDuration(0);
+      return;
+    }
+    setSelectedSubject(subjects.find((element) => element.name === value));
+  };
+
+  const selectTeacherHandler = (event, value) => {
+    if (value === null) {
+      setSelectedTeacher({});
+      return;
+    }
+    setSelectedTeacher(
+      teachers.find(
+        (element) =>
+          element.name ===
+          value.split(" ").slice(1, value.split(" ").length).join(" ")
+      )
     );
   };
 
   const selectTypeHandler = (e) => {
     setTeachers([]);
-    setSelectedTeacher("");
+    setSelectedTeacher({});
     setStudents([]);
     setSelectedStudents("");
     setSelectedType(e.target.value);
@@ -154,25 +180,25 @@ const Calendar = () => {
       setDuration(selectedSubject.courseHours);
       setTeachers(
         selectedSubject.courseTeachers
-          .filter((element) => element.series === selectedSeries)
+          .filter((element) => element.series === selectedSeries.series)
           .map((element) => element.teacher)
       );
 
       setSelectedTeacher(
         selectedSubject.courseTeachers
-          .filter((element) => element.series === selectedSeries)
+          .filter((element) => element.series === selectedSeries.series)
           .map((element) => element.teacher)[0]
       );
 
       setStudents(
         series
-          .filter((element) => element.series === selectedSeries)
+          .filter((element) => element.series === selectedSeries.series)
           .map((element) => `Seria ${element.series}`)
       );
 
       setSelectedStudents(
         series
-          .filter((element) => element.series === selectedSeries)
+          .filter((element) => element.series === selectedSeries.series)
           .map((element) => `Seria ${element.series}`)[0]
       );
     }
@@ -195,7 +221,7 @@ const Calendar = () => {
 
       setStudents(
         series
-          .filter((element) => element.series === selectedSeries)
+          .filter((element) => element.series === selectedSeries.series)
           .map((element) => {
             let newStudents = [];
 
@@ -235,27 +261,20 @@ const Calendar = () => {
     }
   };
 
+  const selectClassroomHandler = (event, value) => {
+    if (value === null) {
+      setSelectedClassroom({});
+      return;
+    }
+    setSelectedClassroom(classrooms.find((element) => element.room === value));
+  };
+
   const saveHandler = async (e) => {
-    let date = new Date(selectedDate);
-    const startDate = new Date(selectedDate);
-    const endDate = new Date(date.setHours(date.getHours() + duration));
     e.preventDefault();
-    console.log({
-      year: selectedYear,
-      series: selectedSeries,
-      subject: subjectName,
-      type: selectedType,
-      teacher: selectedTeacher,
-      students: selectedStudents,
-      classroom: selectedClassroom,
-      start: startDate,
-      end: endDate,
-      interval: interval,
-    });
 
     await axios.post("http://localhost:3001/events", {
-      start: startDate,
-      subject: subjectName,
+      start: new Date(selectedDate),
+      subject: selectedSubject.name,
       type: selectedType,
       teacher: selectedTeacher,
       students: selectedStudents,
@@ -264,6 +283,7 @@ const Calendar = () => {
       series: selectedSeries,
       duration: duration,
       interval: interval,
+      holidays: holidays,
     });
 
     const response = await axios.get("http://localhost:3001/events");
@@ -273,19 +293,19 @@ const Calendar = () => {
     setShownEvents(
       response.data.filter(
         (element) =>
-          element.extendedProps.series === selectedSeries &&
+          element.extendedProps.series.series === selectedSeries.series &&
           element.extendedProps.year === selectedYear
       )
     );
 
     setSelectedSubject({});
-    setSubjectName("");
+
     setSelectedType("");
     setTeachers([]);
-    setSelectedTeacher("");
+    setSelectedTeacher({});
     setStudents([]);
     setSelectedStudents("");
-    setSelectedClassroom("");
+    setSelectedClassroom({});
     setSelectedDate("");
     setInterval(0);
     setDuration(0);
@@ -294,13 +314,13 @@ const Calendar = () => {
   const cancelHandler = (e) => {
     e.preventDefault();
     setSelectedSubject({});
-    setSubjectName("");
+
     setSelectedType("");
     setTeachers([]);
-    setSelectedTeacher("");
+    setSelectedTeacher({});
     setStudents([]);
     setSelectedStudents("");
-    setSelectedClassroom("");
+    setSelectedClassroom({});
     setSelectedDate("");
     setInterval(0);
     setDuration(0);
@@ -317,7 +337,8 @@ const Calendar = () => {
       `http://localhost:3001/events/${info.event._def.extendedProps._id}`,
       {
         start: info.event.start,
-        end: info.event.end,
+        oldStart: oldStart,
+        initialStart: initialStart,
       }
     );
 
@@ -328,10 +349,19 @@ const Calendar = () => {
     setShownEvents(
       response.data.filter(
         (element) =>
-          element.extendedProps.series === selectedSeries &&
+          element.extendedProps.series.series === selectedSeries.series &&
           element.extendedProps.year === selectedYear
       )
     );
+  };
+
+  const eventDragHandler = async (info) => {
+    const response = await axios.get(
+      `http://localhost:3001/events/${info.event._def.extendedProps._id}`
+    );
+
+    setInitialStart(response.data.rrule.dtstart);
+    setOldStart(info.event.start);
   };
 
   const renderEventContent = (eventInfo) => {
@@ -340,9 +370,8 @@ const Calendar = () => {
       <div className={styles.eventContent}>
         <div>
           <b>{eventInfo.event.title}</b>
-          <p>{eventInfo.event.extendedProps.studenti}</p>
-          <p>{eventInfo.event.extendedProps.teacher}</p>
-          <p>Sala: {eventInfo.event.extendedProps.classroom}</p>
+          <p>{`${eventInfo.event.extendedProps.teacher.title} ${eventInfo.event.extendedProps.teacher.name}`}</p>
+          <p>Sala: {eventInfo.event.extendedProps.classroom.room}</p>
           <p>{eventInfo.event.extendedProps.students}</p>
           <p>{eventInfo.display}</p>
         </div>
@@ -384,7 +413,7 @@ const Calendar = () => {
               key={element.series}
               style={{ color: "#2c3e50", borderColor: "#2c3e50" }}
               onClick={() => {
-                changeSeriesHandler(element.series);
+                changeSeriesHandler(element);
               }}
             >{`Seria ${element.series}`}</Button>
           ))}
@@ -393,24 +422,28 @@ const Calendar = () => {
 
       <div className={styles.form}>
         <Paper>
-          <Typography variant="h6">{`Anul ${selectedYear} Seria ${selectedSeries}`}</Typography>
+          <Typography variant="h6">{`Anul ${selectedYear} Seria ${selectedSeries.series}`}</Typography>
           <Grid container spacing={2}>
             <Grid item xs={3}>
               <Typography>Selectați disciplina</Typography>
-              <Select
-                error={subjectName === "" ? true : false}
-                fullWidth
-                value={subjectName}
-                onChange={selectSubjectHandler}
-              >
-                {subjects
+              <Autocomplete
+                value={
+                  selectedSubject.name === undefined
+                    ? null
+                    : selectedSubject.name
+                }
+                noOptionsText=""
+                options={subjects
                   .filter((subject) => subject.year === selectedYear)
-                  .map((subject) => (
-                    <MenuItem key={subject._id} value={subject.name}>
-                      {subject.name}
-                    </MenuItem>
-                  ))}
-              </Select>
+                  .map((subject) => subject.name)}
+                onChange={selectSubjectHandler}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={selectedSubject.name === undefined}
+                  />
+                )}
+              />
             </Grid>
 
             <Grid item xs={3}>
@@ -438,18 +471,24 @@ const Calendar = () => {
 
             <Grid item xs={3}>
               <Typography>Selectați cadrul didactic</Typography>
-              <Select
-                error={selectedTeacher === "" ? true : false}
-                fullWidth
-                value={selectedTeacher}
-                onChange={(e) => setSelectedTeacher(e.target.value)}
-              >
-                {teachers.map((teacher) => (
-                  <MenuItem key={teacher} value={teacher}>
-                    {teacher}
-                  </MenuItem>
-                ))}
-              </Select>
+              <Autocomplete
+                value={
+                  selectedTeacher.name === undefined
+                    ? null
+                    : `${selectedTeacher.title} ${selectedTeacher.name}`
+                }
+                noOptionsText=""
+                options={teachers.map(
+                  (element) => `${element.title} ${element.name}`
+                )}
+                onChange={selectTeacherHandler}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={selectedTeacher.name === undefined}
+                  />
+                )}
+              />
             </Grid>
 
             <Grid item xs={3}>
@@ -470,18 +509,22 @@ const Calendar = () => {
 
             <Grid item xs={3}>
               <Typography>Selectați sala</Typography>
-              <Select
-                error={selectedClassroom === "" ? true : false}
-                fullWidth
-                value={selectedClassroom}
-                onChange={(e) => setSelectedClassroom(e.target.value)}
-              >
-                {classrooms.map((classroom) => (
-                  <MenuItem key={classroom._id} value={classroom.room}>
-                    {classroom.room}
-                  </MenuItem>
-                ))}
-              </Select>
+              <Autocomplete
+                value={
+                  selectedClassroom.room === undefined
+                    ? null
+                    : selectedClassroom.room
+                }
+                options={classrooms.map((element) => element.room)}
+                noOptionsText=""
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={selectedClassroom.room === undefined}
+                  />
+                )}
+                onChange={selectClassroomHandler}
+              />
             </Grid>
 
             <Grid item xs={3}>
@@ -572,6 +615,7 @@ const Calendar = () => {
           editable
           eventDurationEditable={false}
           eventDrop={eventDropHandler}
+          eventDragStart={eventDragHandler}
         />
       </div>
     </>
