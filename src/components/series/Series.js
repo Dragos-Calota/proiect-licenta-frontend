@@ -108,26 +108,14 @@ const Series = ({ setEditingSeriesId }) => {
                     return (
                       <TableRow key={element._id}>
                         <TableCell>{`Seria ${element.series}`}</TableCell>
-                        <TableCell>
-                          <>{`Grupe: ${element.first.groups.length}`}</>
-                          <br />
-                          <>{`Semigrupe: ${element.first.semigroups.length}`}</>
-                        </TableCell>
-                        <TableCell>
-                          <>{`Grupe: ${element.second.groups.length}`}</>
-                          <br />
-                          <>{`Semigrupe: ${element.second.semigroups.length}`}</>
-                        </TableCell>
-                        <TableCell>
-                          <>{`Grupe: ${element.third.groups.length}`}</>
-                          <br />
-                          <>{`Semigrupe: ${element.third.semigroups.length}`}</>
-                        </TableCell>
-                        <TableCell>
-                          <>{`Grupe: ${element.fourth.groups.length}`}</>
-                          <br />
-                          <>{`Semigrupe: ${element.fourth.semigroups.length}`}</>
-                        </TableCell>
+                        {element.years.map((element) => (
+                          <TableCell key={element.year}>
+                            <>{`Grupe: ${element.groups.length}`}</>
+                            <br />
+                            <>{`Semigrupe: ${element.semigroups.length}`}</>
+                          </TableCell>
+                        ))}
+
                         <TableCell align="right">
                           <IconButton
                             onClick={(e) => {

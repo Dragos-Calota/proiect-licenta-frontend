@@ -44,10 +44,9 @@ const Teachers = ({ setEditingTeacherId }) => {
   }, [teachers]);
 
   const deleteOptionHandler = async (teacherId) => {
-    const response = await axios.delete(
-      `http://localhost:3001/teachers/${teacherId}`
-    );
-    console.log(response.data);
+    await axios.patch(`http://localhost:3001/subjects/teacher/${teacherId}`);
+    await axios.delete(`http://localhost:3001/events/teacher/${teacherId}`);
+    await axios.delete(`http://localhost:3001/teachers/${teacherId}`);
 
     setTeachers(teachers.filter((teacher) => teacher._id !== teacherId));
   };
@@ -106,7 +105,38 @@ const Teachers = ({ setEditingTeacherId }) => {
                       <TableRow key={teacher._id}>
                         <TableCell>{`${teacher.title} ${teacher.name}`}</TableCell>
                         <TableCell>{teacher.email}</TableCell>
-                        <TableCell></TableCell>
+                        <TableCell>
+                          {!teacher.hasPreferences && (
+                            <Typography variant="inherit">
+                              Fără preferințe
+                            </Typography>
+                          )}
+                          {teacher.hasPreferences && (
+                            <TableContainer component={Paper}>
+                              <Table>
+                                <TableBody>
+                                  {teacher.preferences
+                                    .filter((element) => element.isAvailable)
+                                    .map((element) => (
+                                      <TableRow key={element.day}>
+                                        <TableCell>
+                                          {`${element.day} - ${
+                                            element.startHours < 10
+                                              ? "0" + element.startHours
+                                              : element.startHours
+                                          }:00-${
+                                            element.endHours < 10
+                                              ? "0" + element.endHours
+                                              : element.endHours
+                                          }:00`}
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                          )}
+                        </TableCell>
                         <TableCell align="right">
                           <IconButton
                             onClick={(e) => {

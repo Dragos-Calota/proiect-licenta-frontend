@@ -227,8 +227,12 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
 
         <Grid item xs={0} md={2}></Grid>
 
+        <Grid item xs={12}>
+          <Typography>Împărțire ore:</Typography>
+        </Grid>
+
         <Grid item xs={12} md={3}>
-          <Typography>Ore curs</Typography>
+          <Typography>Curs</Typography>
           <TextField
             fullWidth
             error={courseHours < 0}
@@ -254,7 +258,7 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
         </Grid>
 
         <Grid item xs={12} md={3}>
-          <Typography>Ore seminar</Typography>
+          <Typography>Seminar</Typography>
           <TextField
             fullWidth
             error={seminarHours < 0}
@@ -268,7 +272,7 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
         </Grid>
 
         <Grid item xs={12} md={3}>
-          <Typography>Ore laborator</Typography>
+          <Typography>Laborator</Typography>
           <TextField
             fullWidth
             error={labHours < 0}
@@ -282,7 +286,7 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
         </Grid>
 
         <Grid item xs={12} md={3}>
-          <Typography>Ore proiect</Typography>
+          <Typography>Proiect</Typography>
           <TextField
             fullWidth
             error={projectHours < 0}

@@ -29,6 +29,7 @@ const Calendar = () => {
   const [series, setSeries] = useState([]);
   const [selectedYear, setSelectedYear] = useState(1);
   const [selectedSeries, setSelectedSeries] = useState({});
+  const [groups, setGroups] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState({});
   const [selectedType, setSelectedType] = useState("");
@@ -43,9 +44,10 @@ const Calendar = () => {
   const [duration, setDuration] = useState(0);
   const [events, setEvents] = useState([]);
   const [shownEvents, setShownEvents] = useState([]);
-  const [holidays, setHolidays] = useState([]);
   const [oldStart, setOldStart] = useState(null);
   const [initialStart, setInitialStart] = useState(null);
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -53,6 +55,11 @@ const Calendar = () => {
 
       setSeries(response.data);
       setSelectedSeries(response.data[0]);
+      setGroups(
+        response.data[0].years
+          .filter((element) => element.year === 1)[0]
+          .groups.map((element) => element)
+      );
     };
 
     const fetchSubjects = async () => {
@@ -81,21 +88,19 @@ const Calendar = () => {
       );
     };
 
-    const fetchHolidays = async () => {
-      const response = await axios.get("http://localhost:3001/holidays");
-
-      setHolidays(response.data);
-    };
-
     fetchSeries();
     fetchSubjects();
     fetchClassrooms();
     fetchEvents();
-    fetchHolidays();
   }, []);
 
   const changeYearHandler = (index) => {
     setSelectedYear(index + 1);
+    setGroups(
+      selectedSeries.years
+        .filter((element) => element.year === index + 1)[0]
+        .groups.map((element) => element)
+    );
     setShownEvents(
       events.filter(
         (element) =>
@@ -113,10 +118,17 @@ const Calendar = () => {
     setSelectedDate("");
     setInterval(0);
     setDuration(0);
+    setError(false);
+    setErrorMessage("");
   };
 
   const changeSeriesHandler = (series) => {
     setSelectedSeries(series);
+    setGroups(
+      series.years
+        .filter((element) => element.year === selectedYear)[0]
+        .groups.map((element) => element)
+    );
     setShownEvents(
       events.filter(
         (element) =>
@@ -135,6 +147,8 @@ const Calendar = () => {
     setSelectedDate("");
     setInterval(0);
     setDuration(0);
+    setError(false);
+    setErrorMessage("");
   };
 
   const selectSubjectHandler = (event, value) => {
@@ -150,6 +164,8 @@ const Calendar = () => {
       setSelectedDate("");
       setInterval(0);
       setDuration(0);
+      setError(false);
+      setErrorMessage("");
       return;
     }
     setSelectedSubject(subjects.find((element) => element.name === value));
@@ -173,6 +189,8 @@ const Calendar = () => {
     setTeachers([]);
     setSelectedTeacher({});
     setStudents([]);
+    setError(false);
+    setErrorMessage("");
     setSelectedStudents("");
     setSelectedType(e.target.value);
 
@@ -223,35 +241,12 @@ const Calendar = () => {
         series
           .filter((element) => element.series === selectedSeries.series)
           .map((element) => {
-            let newStudents = [];
-
-            if (selectedYear === 1) {
-              newStudents = [
-                ...element.first.groups,
-                ...element.first.semigroups,
-              ];
-            }
-
-            if (selectedYear === 2) {
-              newStudents = [
-                ...element.second.groups,
-                ...element.second.semigroups,
-              ];
-            }
-
-            if (selectedYear === 3) {
-              newStudents = [
-                ...element.third.groups,
-                ...element.third.semigroups,
-              ];
-            }
-
-            if (selectedYear === 4) {
-              newStudents = [
-                ...element.fourth.groups,
-                ...element.fourth.semigroups,
-              ];
-            }
+            let newStudents = [
+              ...element.years.find((option) => option.year === selectedYear)
+                .groups,
+              ...element.years.find((option) => option.year === selectedYear)
+                .semigroups,
+            ];
 
             return newStudents;
           })
@@ -272,9 +267,20 @@ const Calendar = () => {
   const saveHandler = async (e) => {
     e.preventDefault();
 
-    await axios.post("http://localhost:3001/events", {
-      start: new Date(selectedDate),
-      subject: selectedSubject.name,
+    const start = new Date(selectedDate);
+
+    const text = await axios.post("http://localhost:3001/events", {
+      start: new Date(
+        Date.UTC(
+          start.getFullYear(),
+          start.getMonth(),
+          start.getDate(),
+          start.getHours(),
+          start.getMinutes(),
+          0
+        )
+      ),
+      subject: selectedSubject,
       type: selectedType,
       teacher: selectedTeacher,
       students: selectedStudents,
@@ -283,8 +289,28 @@ const Calendar = () => {
       series: selectedSeries,
       duration: duration,
       interval: interval,
-      holidays: holidays,
     });
+
+    if (text.data.text) {
+      setError(true);
+      setErrorMessage(text.data.text);
+    }
+
+    if (!text.data.text) {
+      setError(false);
+      setErrorMessage("");
+
+      setSelectedSubject({});
+      setSelectedType("");
+      setTeachers([]);
+      setSelectedTeacher({});
+      setStudents([]);
+      setSelectedStudents("");
+      setSelectedClassroom({});
+      setSelectedDate("");
+      setInterval(0);
+      setDuration(0);
+    }
 
     const response = await axios.get("http://localhost:3001/events");
 
@@ -297,24 +323,11 @@ const Calendar = () => {
           element.extendedProps.year === selectedYear
       )
     );
-
-    setSelectedSubject({});
-
-    setSelectedType("");
-    setTeachers([]);
-    setSelectedTeacher({});
-    setStudents([]);
-    setSelectedStudents("");
-    setSelectedClassroom({});
-    setSelectedDate("");
-    setInterval(0);
-    setDuration(0);
   };
 
   const cancelHandler = (e) => {
     e.preventDefault();
     setSelectedSubject({});
-
     setSelectedType("");
     setTeachers([]);
     setSelectedTeacher({});
@@ -324,6 +337,8 @@ const Calendar = () => {
     setSelectedDate("");
     setInterval(0);
     setDuration(0);
+    setError(false);
+    setErrorMessage("");
   };
 
   const deleteHandler = async (id) => {
@@ -333,14 +348,30 @@ const Calendar = () => {
   };
 
   const eventDropHandler = async (info) => {
-    await axios.patch(
+    const text = await axios.patch(
       `http://localhost:3001/events/${info.event._def.extendedProps._id}`,
       {
+        currentEventId: info.event._def.extendedProps._id,
         start: info.event.start,
         oldStart: oldStart,
         initialStart: initialStart,
+        teacherId: info.event.extendedProps.teacher._id,
+        duration:
+          info.event._def.recurringDef.duration.milliseconds / 1000 / 60 / 60,
+        classroomId: info.event.extendedProps.classroom._id,
+        interval: info.event.extendedProps.interval,
       }
     );
+
+    if (text.data.text) {
+      setError(true);
+      setErrorMessage(text.data.text);
+    }
+
+    if (!text.data.text) {
+      setError(false);
+      setErrorMessage("");
+    }
 
     const response = await axios.get("http://localhost:3001/events");
 
@@ -373,7 +404,6 @@ const Calendar = () => {
           <p>{`${eventInfo.event.extendedProps.teacher.title} ${eventInfo.event.extendedProps.teacher.name}`}</p>
           <p>Sala: {eventInfo.event.extendedProps.classroom.room}</p>
           <p>{eventInfo.event.extendedProps.students}</p>
-          <p>{eventInfo.display}</p>
         </div>
         <div className={styles.eventButtons}>
           <IconButton
@@ -392,32 +422,53 @@ const Calendar = () => {
   return (
     <>
       <Toolbar />
-      <div className={styles.selection}>
-        <ButtonGroup variant="outlined">
-          {[...Array(4)].map((_, index) => {
-            return (
-              <Button
-                style={{ color: "#2c3e50", borderColor: "#2c3e50" }}
-                onClick={() => changeYearHandler(index)}
-                key={index + 1}
-              >
-                Anul {index + 1}
-              </Button>
-            );
-          })}
-        </ButtonGroup>
 
-        <ButtonGroup variant="outlined">
-          {series.map((element) => (
-            <Button
-              key={element.series}
-              style={{ color: "#2c3e50", borderColor: "#2c3e50" }}
-              onClick={() => {
-                changeSeriesHandler(element);
-              }}
-            >{`Seria ${element.series}`}</Button>
-          ))}
-        </ButtonGroup>
+      <div className={styles.selection}>
+        <Grid container spacing={2}>
+          <Grid item xs={5} textAlign="left">
+            <ButtonGroup variant="outlined">
+              {[...Array(4)].map((_, index) => {
+                return (
+                  <Button
+                    style={{ color: "#2c3e50", borderColor: "#2c3e50" }}
+                    onClick={() => changeYearHandler(index)}
+                    key={index + 1}
+                  >
+                    Anul {index + 1}
+                  </Button>
+                );
+              })}
+            </ButtonGroup>
+          </Grid>
+          <Grid item xs={7} textAlign="right">
+            <ButtonGroup variant="outlined">
+              {series.map((element) => (
+                <Button
+                  key={element.series}
+                  style={{ color: "#2c3e50", borderColor: "#2c3e50" }}
+                  onClick={() => {
+                    changeSeriesHandler(element);
+                  }}
+                >{`Seria ${element.series}`}</Button>
+              ))}
+            </ButtonGroup>
+          </Grid>
+          <Grid item xs={12} textAlign="right">
+            <ButtonGroup variant="outlined">
+              <Button style={{ color: "#2c3e50", borderColor: "#2c3e50" }}>
+                Toată seria
+              </Button>
+              {groups.map((element) => (
+                <Button
+                  key={element}
+                  style={{ color: "#2c3e50", borderColor: "#2c3e50" }}
+                >
+                  {element}
+                </Button>
+              ))}
+            </ButtonGroup>
+          </Grid>
+        </Grid>
       </div>
 
       <div className={styles.form}>
@@ -592,9 +643,18 @@ const Calendar = () => {
                     Anulați
                   </Button>
                 </Grid>
-                <Grid item xs={12} />
               </Grid>
             </Grid>
+
+            {error && (
+              <Grid container spacing={1} textAlign="center">
+                <Grid item xs={12}>
+                  <Typography variant="h6" color="red">
+                    {errorMessage}
+                  </Typography>
+                </Grid>
+              </Grid>
+            )}
           </Grid>
         </Paper>
       </div>
@@ -604,8 +664,9 @@ const Calendar = () => {
           plugins={[timeGridPlugin, interactionPlugin, rrulePlugin]}
           locale="ro"
           firstDay={1}
+          timeZone="UTC"
           eventContent={renderEventContent}
-          events={[...holidays, ...shownEvents]}
+          events={shownEvents}
           initialView="timeGridWeek"
           allDaySlot={false}
           slotMinTime="08:00:00"

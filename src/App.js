@@ -9,7 +9,6 @@ import { useState } from "react";
 import Classrooms from "./components/classrooms/Classrooms";
 import ClassroomsForm from "./components/classrooms/ClassroomsForm";
 import SeriesForm from "./components/series/SeriesForm";
-import Holidays from "./components/holidays/Holidays";
 
 const App = () => {
   const [editingTeacherId, setEditingTeacherId] = useState(null);
@@ -84,8 +83,6 @@ const App = () => {
           }
         />
       </Route>
-
-      <Route path="/holidays" element={<Holidays />} />
     </Routes>
   );
 };
