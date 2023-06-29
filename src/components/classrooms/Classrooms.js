@@ -35,14 +35,6 @@ const Classrooms = ({ setEditingClassroomId }) => {
     fetchClassrooms();
   }, []);
 
-  useEffect(() => {
-    setOptions(
-      classrooms.map((classroom) => {
-        return classroom.room;
-      })
-    );
-  }, [classrooms]);
-
   const deleteOptionHandler = async (classroomId) => {
     await axios.delete(`http://localhost:3001/classrooms/${classroomId}`);
 
@@ -61,7 +53,7 @@ const Classrooms = ({ setEditingClassroomId }) => {
           <Autocomplete
             sx={{ width: 400 }}
             size="small"
-            options={options}
+            options={classrooms.map((element) => element.room)}
             onChange={(event, value) => setSearchedClassroom(value)}
             renderInput={(params) => (
               <TextField {...params} label="Căutați sala de curs" />

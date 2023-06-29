@@ -45,11 +45,7 @@ const Series = ({ setEditingSeriesId }) => {
   }, [series]);
 
   const deleteOptionHandler = async (seriesId) => {
-    const response = await axios.delete(
-      `http://localhost:3001/series/${seriesId}`
-    );
-
-    console.log(response.data);
+    await axios.delete(`http://localhost:3001/series/${seriesId}`);
 
     setSeries(series.filter((element) => element._id !== seriesId));
   };

@@ -396,7 +396,6 @@ const Calendar = () => {
   };
 
   const renderEventContent = (eventInfo) => {
-    if (eventInfo.event.display === "background") return <></>;
     return (
       <div className={styles.eventContent}>
         <div>
@@ -422,7 +421,6 @@ const Calendar = () => {
   return (
     <>
       <Toolbar />
-
       <div className={styles.selection}>
         <Grid container spacing={2}>
           <Grid item xs={5} textAlign="left">
@@ -529,8 +527,12 @@ const Calendar = () => {
                     : `${selectedTeacher.title} ${selectedTeacher.name}`
                 }
                 noOptionsText=""
-                options={teachers.map(
-                  (element) => `${element.title} ${element.name}`
+                options={Array.from(
+                  new Set(
+                    teachers.map(
+                      (element) => `${element.title} ${element.name}`
+                    )
+                  )
                 )}
                 onChange={selectTeacherHandler}
                 renderInput={(params) => (
