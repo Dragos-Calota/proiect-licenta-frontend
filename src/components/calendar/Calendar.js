@@ -48,6 +48,7 @@ const Calendar = () => {
   const [initialStart, setInitialStart] = useState(null);
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [searchedGroup, setSearchedGroup] = useState(null);
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -82,8 +83,8 @@ const Calendar = () => {
       setShownEvents(
         response.data.filter(
           (element) =>
-            element.extendedProps.series.series === "A" &&
-            element.extendedProps.year === 1
+            element.extendedProps.year === 1 &&
+            element.extendedProps.students === "Seria 1A"
         )
       );
     };
@@ -104,8 +105,9 @@ const Calendar = () => {
     setShownEvents(
       events.filter(
         (element) =>
-          element.extendedProps.series.series === selectedSeries.series &&
-          element.extendedProps.year === index + 1
+          element.extendedProps.year === index + 1 &&
+          element.extendedProps.students ===
+            `Seria ${index + 1}${selectedSeries.series}`
       )
     );
     setSelectedSubject({});
@@ -123,6 +125,7 @@ const Calendar = () => {
   };
 
   const changeSeriesHandler = (series) => {
+    setSearchedGroup(null);
     setSelectedSeries(series);
     setGroups(
       series.years
@@ -132,8 +135,9 @@ const Calendar = () => {
     setShownEvents(
       events.filter(
         (element) =>
-          element.extendedProps.series.series === series.series &&
-          element.extendedProps.year === selectedYear
+          element.extendedProps.year === selectedYear &&
+          element.extendedProps.students ===
+            `Seria ${selectedYear}${series.series}`
       )
     );
     setSelectedSubject({});
@@ -315,14 +319,30 @@ const Calendar = () => {
     const response = await axios.get("http://localhost:3001/events");
 
     setEvents(response.data);
+    if (searchedGroup === null) {
+      setShownEvents(
+        response.data.filter(
+          (element) =>
+            element.extendedProps.year === selectedYear &&
+            element.extendedProps.students ===
+              `Seria ${selectedYear}${selectedSeries.series}`
+        )
+      );
+    }
 
-    setShownEvents(
-      response.data.filter(
-        (element) =>
-          element.extendedProps.series.series === selectedSeries.series &&
-          element.extendedProps.year === selectedYear
-      )
-    );
+    if (searchedGroup !== null) {
+      setShownEvents(
+        response.data.filter(
+          (element) =>
+            element.extendedProps.year === selectedYear &&
+            (element.extendedProps.students === searchedGroup ||
+              element.extendedProps.students
+                .split("")
+                .slice(0, element.extendedProps.students.length - 1)
+                .join("") === searchedGroup)
+        )
+      );
+    }
   };
 
   const cancelHandler = (e) => {
@@ -360,6 +380,9 @@ const Calendar = () => {
           info.event._def.recurringDef.duration.milliseconds / 1000 / 60 / 60,
         classroomId: info.event.extendedProps.classroom._id,
         interval: info.event.extendedProps.interval,
+        students: info.event.extendedProps.students,
+        year: info.event.extendedProps.year,
+        series: info.event.extendedProps.series,
       }
     );
 
@@ -377,13 +400,30 @@ const Calendar = () => {
 
     setEvents(response.data);
 
-    setShownEvents(
-      response.data.filter(
-        (element) =>
-          element.extendedProps.series.series === selectedSeries.series &&
-          element.extendedProps.year === selectedYear
-      )
-    );
+    if (searchedGroup === null) {
+      setShownEvents(
+        response.data.filter(
+          (element) =>
+            element.extendedProps.year === selectedYear &&
+            element.extendedProps.students ===
+              `Seria ${selectedYear}${selectedSeries.series}`
+        )
+      );
+    }
+
+    if (searchedGroup !== null) {
+      setShownEvents(
+        response.data.filter(
+          (element) =>
+            element.extendedProps.year === selectedYear &&
+            (element.extendedProps.students === searchedGroup ||
+              element.extendedProps.students
+                .split("")
+                .slice(0, element.extendedProps.students.length - 1)
+                .join("") === searchedGroup)
+        )
+      );
+    }
   };
 
   const eventDragHandler = async (info) => {
@@ -402,7 +442,11 @@ const Calendar = () => {
           <b>{eventInfo.event.title}</b>
           <p>{`${eventInfo.event.extendedProps.teacher.title} ${eventInfo.event.extendedProps.teacher.name}`}</p>
           <p>Sala: {eventInfo.event.extendedProps.classroom.room}</p>
-          <p>{eventInfo.event.extendedProps.students}</p>
+          <p>
+            {eventInfo.event.extendedProps.students.split(" ")[0] === "Seria"
+              ? ""
+              : eventInfo.event.extendedProps.students}
+          </p>
         </div>
         <div className={styles.eventButtons}>
           <IconButton
@@ -415,6 +459,32 @@ const Calendar = () => {
           </IconButton>
         </div>
       </div>
+    );
+  };
+
+  const wholeSeriesSelect = () => {
+    setSearchedGroup(null);
+    setShownEvents(
+      events.filter(
+        (element) =>
+          element.extendedProps.year === selectedYear &&
+          element.extendedProps.students ===
+            `Seria ${selectedYear}${selectedSeries.series}`
+      )
+    );
+  };
+
+  const selectGroupHandler = (group) => {
+    setSearchedGroup(group);
+    setShownEvents(
+      events.filter(
+        (element) =>
+          element.extendedProps.students === group ||
+          element.extendedProps.students
+            .split("")
+            .slice(0, element.extendedProps.students.length - 1)
+            .join("") === group
+      )
     );
   };
 
@@ -451,15 +521,20 @@ const Calendar = () => {
               ))}
             </ButtonGroup>
           </Grid>
+
           <Grid item xs={12} textAlign="right">
             <ButtonGroup variant="outlined">
-              <Button style={{ color: "#2c3e50", borderColor: "#2c3e50" }}>
+              <Button
+                onClick={wholeSeriesSelect}
+                style={{ color: "#2c3e50", borderColor: "#2c3e50" }}
+              >
                 Toată seria
               </Button>
               {groups.map((element) => (
                 <Button
                   key={element}
                   style={{ color: "#2c3e50", borderColor: "#2c3e50" }}
+                  onClick={() => selectGroupHandler(element)}
                 >
                   {element}
                 </Button>
