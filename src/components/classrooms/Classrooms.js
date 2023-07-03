@@ -23,7 +23,6 @@ const Classrooms = ({ setEditingClassroomId }) => {
   const navigate = useNavigate();
 
   const [classrooms, setClassrooms] = useState([]);
-  const [options, setOptions] = useState([]);
   const [searchedClassroom, setSearchedClassroom] = useState(null);
 
   useEffect(() => {
@@ -37,7 +36,6 @@ const Classrooms = ({ setEditingClassroomId }) => {
 
   const deleteOptionHandler = async (classroomId) => {
     await axios.delete(`http://localhost:3001/classrooms/${classroomId}`);
-
     await axios.delete(`http://localhost:3001/events/classroom/${classroomId}`);
 
     setClassrooms(

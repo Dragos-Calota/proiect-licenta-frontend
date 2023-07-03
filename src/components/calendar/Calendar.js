@@ -448,7 +448,7 @@ const Calendar = () => {
               : eventInfo.event.extendedProps.students}
           </p>
         </div>
-        <div className={styles.eventButtons}>
+        <div>
           <IconButton
             onClick={(e) => {
               e.preventDefault();
