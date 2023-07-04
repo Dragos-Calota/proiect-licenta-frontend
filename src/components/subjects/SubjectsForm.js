@@ -32,13 +32,17 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
 
   useEffect(() => {
     const fetchTeachers = async () => {
-      const response = await axios.get("http://localhost:3001/teachers");
+      const response = await axios.get(
+        "https://proiect-licenta-backend.onrender.com/teachers"
+      );
 
       setTeachers(response.data);
     };
 
     const fetchSeries = async () => {
-      const response = await axios.get("http://localhost:3001/series");
+      const response = await axios.get(
+        "https://proiect-licenta-backend.onrender.com/series"
+      );
 
       setCourseTeachers(
         response.data.map((element) => ({
@@ -62,7 +66,7 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
     if (editingSubjectId !== null) {
       const fetchSubject = async () => {
         const response = await axios.get(
-          `http://localhost:3001/subjects/${editingSubjectId}`
+          `https://proiect-licenta-backend.onrender.com/subjects/${editingSubjectId}`
         );
 
         setSubjectName(response.data.name);
@@ -86,20 +90,23 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
   const saveHandler = async () => {
     let response = null;
     if (editingSubjectId === null) {
-      response = await axios.post("http://localhost:3001/subjects", {
-        name: subjectName,
-        shortName: shortName,
-        year: +year,
-        semester: +semester,
-        courseHours: +courseHours,
-        seminarHours: +seminarHours,
-        labHours: +labHours,
-        projectHours: +projectHours,
-        courseTeachers: courseTeachers,
-        seminarTeachers: seminarTeachers,
-        labTeachers: labTeachers,
-        projectTeachers: projectTeachers,
-      });
+      response = await axios.post(
+        "https://proiect-licenta-backend.onrender.com/subjects",
+        {
+          name: subjectName,
+          shortName: shortName,
+          year: +year,
+          semester: +semester,
+          courseHours: +courseHours,
+          seminarHours: +seminarHours,
+          labHours: +labHours,
+          projectHours: +projectHours,
+          courseTeachers: courseTeachers,
+          seminarTeachers: seminarTeachers,
+          labTeachers: labTeachers,
+          projectTeachers: projectTeachers,
+        }
+      );
 
       if (response.data.message) {
         setError(true);
@@ -113,7 +120,7 @@ const SubjectsForm = ({ editingSubjectId, setEditingSubjectId }) => {
 
     if (editingSubjectId !== null) {
       response = await axios.patch(
-        `http://localhost:3001/subjects/${editingSubjectId}`,
+        `https://proiect-licenta-backend.onrender.com/subjects/${editingSubjectId}`,
         {
           name: subjectName,
           shortName: shortName,

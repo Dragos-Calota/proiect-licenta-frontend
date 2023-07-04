@@ -27,7 +27,7 @@ const SeriesForm = ({ editingSeriesId, setEditingSeriesId }) => {
     if (editingSeriesId !== null) {
       const fetchSeries = async () => {
         const response = await axios.get(
-          `http://localhost:3001/series/${editingSeriesId}`
+          `https://proiect-licenta-backend.onrender.com/series/${editingSeriesId}`
         );
 
         setSeries(response.data.series);
@@ -49,17 +49,20 @@ const SeriesForm = ({ editingSeriesId, setEditingSeriesId }) => {
     let response = null;
 
     if (editingSeriesId === null) {
-      response = await axios.post("http://localhost:3001/series", {
-        series: series,
-        groupsNumberFirstYear: +groupsNumberFirstYear,
-        semigroupsNumberFirstYear: +semigroupsNumberFirstYear,
-        groupsNumberSecondYear: +groupsNumberSecondYear,
-        semigroupsNumberSecondYear: +semigroupsNumberSecondYear,
-        groupsNumberThirdYear: +groupsNumberThirdYear,
-        semigroupsNumberThirdYear: +semigroupsNumberThirdYear,
-        groupsNumberFourthYear: +groupsNumberFourthYear,
-        semigroupsNumberFourthYear: +semigroupsNumberFourthYear,
-      });
+      response = await axios.post(
+        "https://proiect-licenta-backend.onrender.com/series",
+        {
+          series: series,
+          groupsNumberFirstYear: +groupsNumberFirstYear,
+          semigroupsNumberFirstYear: +semigroupsNumberFirstYear,
+          groupsNumberSecondYear: +groupsNumberSecondYear,
+          semigroupsNumberSecondYear: +semigroupsNumberSecondYear,
+          groupsNumberThirdYear: +groupsNumberThirdYear,
+          semigroupsNumberThirdYear: +semigroupsNumberThirdYear,
+          groupsNumberFourthYear: +groupsNumberFourthYear,
+          semigroupsNumberFourthYear: +semigroupsNumberFourthYear,
+        }
+      );
 
       if (response.data.message) {
         setError(true);
@@ -73,7 +76,7 @@ const SeriesForm = ({ editingSeriesId, setEditingSeriesId }) => {
 
     if (editingSeriesId !== null) {
       response = await axios.patch(
-        `http://localhost:3001/series/${editingSeriesId}`,
+        `https://proiect-licenta-backend.onrender.com/series/${editingSeriesId}`,
         {
           series: series,
           groupsNumberFirstYear: +groupsNumberFirstYear,

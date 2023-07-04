@@ -52,7 +52,9 @@ const Calendar = () => {
 
   useEffect(() => {
     const fetchSeries = async () => {
-      const response = await axios.get("http://localhost:3001/series");
+      const response = await axios.get(
+        "https://proiect-licenta-backend.onrender.com/series"
+      );
 
       setSeries(response.data);
       setSelectedSeries(response.data[0]);
@@ -64,19 +66,25 @@ const Calendar = () => {
     };
 
     const fetchSubjects = async () => {
-      const response = await axios.get("http://localhost:3001/subjects");
+      const response = await axios.get(
+        "https://proiect-licenta-backend.onrender.com/subjects"
+      );
 
       setSubjects(response.data);
     };
 
     const fetchClassrooms = async () => {
-      const response = await axios.get("http://localhost:3001/classrooms");
+      const response = await axios.get(
+        "https://proiect-licenta-backend.onrender.com/classrooms"
+      );
 
       setClassrooms(response.data);
     };
 
     const fetchEvents = async () => {
-      const response = await axios.get("http://localhost:3001/events");
+      const response = await axios.get(
+        "https://proiect-licenta-backend.onrender.com/events"
+      );
 
       setEvents(response.data);
 
@@ -273,27 +281,30 @@ const Calendar = () => {
 
     const start = new Date(selectedDate);
 
-    const text = await axios.post("http://localhost:3001/events", {
-      start: new Date(
-        Date.UTC(
-          start.getFullYear(),
-          start.getMonth(),
-          start.getDate(),
-          start.getHours(),
-          start.getMinutes(),
-          0
-        )
-      ),
-      subject: selectedSubject,
-      type: selectedType,
-      teacher: selectedTeacher,
-      students: selectedStudents,
-      classroom: selectedClassroom,
-      year: selectedYear,
-      series: selectedSeries,
-      duration: duration,
-      interval: interval,
-    });
+    const text = await axios.post(
+      "https://proiect-licenta-backend.onrender.com/events",
+      {
+        start: new Date(
+          Date.UTC(
+            start.getFullYear(),
+            start.getMonth(),
+            start.getDate(),
+            start.getHours(),
+            start.getMinutes(),
+            0
+          )
+        ),
+        subject: selectedSubject,
+        type: selectedType,
+        teacher: selectedTeacher,
+        students: selectedStudents,
+        classroom: selectedClassroom,
+        year: selectedYear,
+        series: selectedSeries,
+        duration: duration,
+        interval: interval,
+      }
+    );
 
     if (text.data.text) {
       setError(true);
@@ -316,7 +327,9 @@ const Calendar = () => {
       setDuration(0);
     }
 
-    const response = await axios.get("http://localhost:3001/events");
+    const response = await axios.get(
+      "https://proiect-licenta-backend.onrender.com/events"
+    );
 
     setEvents(response.data);
     if (searchedGroup === null) {
@@ -362,14 +375,16 @@ const Calendar = () => {
   };
 
   const deleteHandler = async (id) => {
-    await axios.delete(`http://localhost:3001/events/${id}`);
+    await axios.delete(
+      `https://proiect-licenta-backend.onrender.com/events/${id}`
+    );
     setEvents(events.filter((element) => element._id !== id));
     setShownEvents(shownEvents.filter((element) => element._id !== id));
   };
 
   const eventDropHandler = async (info) => {
     const text = await axios.patch(
-      `http://localhost:3001/events/${info.event._def.extendedProps._id}`,
+      `https://proiect-licenta-backend.onrender.com/events/${info.event._def.extendedProps._id}`,
       {
         currentEventId: info.event._def.extendedProps._id,
         start: info.event.start,
@@ -396,7 +411,9 @@ const Calendar = () => {
       setErrorMessage("");
     }
 
-    const response = await axios.get("http://localhost:3001/events");
+    const response = await axios.get(
+      "https://proiect-licenta-backend.onrender.com/events"
+    );
 
     setEvents(response.data);
 
@@ -428,7 +445,7 @@ const Calendar = () => {
 
   const eventDragHandler = async (info) => {
     const response = await axios.get(
-      `http://localhost:3001/events/${info.event._def.extendedProps._id}`
+      `https://proiect-licenta-backend.onrender.com/events/${info.event._def.extendedProps._id}`
     );
 
     setInitialStart(response.data.rrule.dtstart);

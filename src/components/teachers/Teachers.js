@@ -28,7 +28,9 @@ const Teachers = ({ setEditingTeacherId }) => {
 
   useEffect(() => {
     const fetchTeachers = async () => {
-      const response = await axios.get("http://localhost:3001/teachers");
+      const response = await axios.get(
+        "https://proiect-licenta-backend.onrender.com/teachers"
+      );
       setTeachers(response.data);
     };
 
@@ -44,9 +46,15 @@ const Teachers = ({ setEditingTeacherId }) => {
   }, [teachers]);
 
   const deleteOptionHandler = async (teacherId) => {
-    await axios.patch(`http://localhost:3001/subjects/teacher/${teacherId}`);
-    await axios.delete(`http://localhost:3001/events/teacher/${teacherId}`);
-    await axios.delete(`http://localhost:3001/teachers/${teacherId}`);
+    await axios.patch(
+      `https://proiect-licenta-backend.onrender.com/subjects/teacher/${teacherId}`
+    );
+    await axios.delete(
+      `https://proiect-licenta-backend.onrender.com/events/teacher/${teacherId}`
+    );
+    await axios.delete(
+      `https://proiect-licenta-backend.onrender.com/teachers/${teacherId}`
+    );
 
     setTeachers(teachers.filter((teacher) => teacher._id !== teacherId));
   };
